@@ -35,9 +35,6 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        // Initialize the ImageLoader library
-        ImageLoader.init(this)
-
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
 
         // Set up Retrofit for API calls
@@ -52,7 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         // Set click listener for the invalidate cache button
         binding.invalidateCacheButton.setOnClickListener {
-            ImageLoader.invalidateCache()
+            ImageLoader.getInstance(this).invalidateCache()
             Toast.makeText(this, "Cache invalidated!", Toast.LENGTH_SHORT).show()
         }
     }

@@ -15,62 +15,78 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
-object ImageLoader {
-    private const val TAG = "ImageLoader"
+private const val TAG = "ImageLoader"
+
+class ImageLoader private constructor() {
+
+    companion object {
+        @Volatile
+        private var INSTANCE: ImageLoader? = null
+
+        fun getInstance(context: Context): ImageLoader =
+            INSTANCE ?: synchronized(this) {
+                INSTANCE ?: ImageLoader().also {
+                    it.diskCacheManager = DiskCacheManager(context)
+                    INSTANCE = it
+                }
+            }
+    }
 
     private lateinit var diskCacheManager: DiskCacheManager
 
-    fun init(context: Context) {
-        diskCacheManager = DiskCacheManager(context)
-    }
+    inner class Builder(private val url: String) {
+        private var placeholder: Drawable? = null
 
-    /**
-     * Loads an image from a URL into the provided ImageView,
-     * using a cache and a placeholder.
-     */
-    fun loadImage(url: String, placeholder: Drawable, imageView: ImageView) {
-        imageView.setImageDrawable(placeholder)
-
-        // Check memory cache first
-        val memCachedBitmap = MemoryCacheManager.get(url)
-        if (memCachedBitmap != null) {
-            imageView.setImageBitmap(memCachedBitmap)
-            return
+        fun placeholder(drawable: Drawable?): Builder {
+            this.placeholder = drawable
+            return this
         }
 
-        // Check disk cache next
-        val diskCachedBitmap = diskCacheManager.get(url)
-        if (diskCachedBitmap != null) {
-            MemoryCacheManager.put(url, diskCachedBitmap)
-            imageView.setImageBitmap(diskCachedBitmap)
-            return
-        }
+        fun into(imageView: ImageView) {
+            imageView.setImageDrawable(placeholder)
+            imageView.tag = url
 
-        // Use a coroutine to download and set the image
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                // Wait for the view to be laid out to get dimensions
-                val targetWidth = imageView.width
-                val targetHeight = imageView.height
-                if (targetWidth == 0 || targetHeight == 0) {
-                    Log.w(TAG, "ImageView dimensions are 0. Skipping download for $url")
-                    return@launch
-                }
+            // Check memory cache first
+            val memCachedBitmap = MemoryCacheManager.get(url)
+            if (memCachedBitmap != null) {
+                imageView.setImageBitmap(memCachedBitmap)
+                return
+            }
 
-                val downloadedBitmap = downloadImage(url, targetWidth, targetHeight)
-                if (downloadedBitmap != null) {
-                    diskCacheManager.put(url, downloadedBitmap)
-                    MemoryCacheManager.put(url, downloadedBitmap)
-                    withContext(Dispatchers.Main) {
-                        imageView.setImageBitmap(downloadedBitmap)
+            // Check disk cache next
+            val diskCachedBitmap = diskCacheManager.get(url)
+            if (diskCachedBitmap != null) {
+                MemoryCacheManager.put(url, diskCachedBitmap)
+                imageView.setImageBitmap(diskCachedBitmap)
+                return
+            }
+
+            // Use a coroutine to download and set the image
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val targetWidth = imageView.width
+                    val targetHeight = imageView.height
+                    if (targetWidth == 0 || targetHeight == 0) {
+                        Log.w(TAG, "ImageView dimensions are 0. Skipping download for $url")
+                        return@launch
                     }
-                } else {
-                    Log.e(TAG, "Failed to download or decode bitmap for $url")
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error loading image from $url", e)
-                withContext(Dispatchers.Main) {
-                    // Optionally set an error drawable here
+
+                    val downloadedBitmap = downloadImage(url, targetWidth, targetHeight)
+                    if (downloadedBitmap != null) {
+                        diskCacheManager.put(url, downloadedBitmap)
+                        MemoryCacheManager.put(url, downloadedBitmap)
+                        withContext(Dispatchers.Main) {
+                            if (imageView.tag == url) {
+                                imageView.setImageBitmap(downloadedBitmap)
+                            } else {
+                                Log.d(TAG, "ImageView recycled. Skipping bitmap update for $url")
+                            }
+                        }
+                    } else {
+                        Log.e(TAG, "Failed to download or decode bitmap for $url")
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error loading image from $url", e)
                 }
             }
         }

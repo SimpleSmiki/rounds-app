@@ -30,7 +30,10 @@ class ImageAdapter(
 
         val placeholder = ContextCompat.getDrawable(context, R.drawable.ic_placeholder)
 
-        ImageLoader.loadImage(imageItem.url, placeholder,holder.binding.imageView)
+        ImageLoader.getInstance(context)
+            .Builder(imageItem.url)
+            .placeholder(placeholder)
+            .into(holder.binding.imageView)
     }
 
     override fun getItemCount(): Int {
