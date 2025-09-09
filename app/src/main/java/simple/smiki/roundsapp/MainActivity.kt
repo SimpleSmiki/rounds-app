@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         // Set click listener for the invalidate cache button
         binding.invalidateCacheButton.setOnClickListener {
             ImageLoader.getInstance(this).invalidateCache()
-            Toast.makeText(this, "Cache invalidated!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.cache_invalidated, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -61,12 +61,12 @@ class MainActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     // Update the RecyclerView on the main thread
                     imageAdapter = ImageAdapter(this@MainActivity, images)
-                    binding.recyclerView.adapter = imageAdapter // Use binding.recyclerView
+                    binding.recyclerView.adapter = imageAdapter
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@MainActivity, "Failed to fetch images", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, R.string.error_fetching_images, Toast.LENGTH_SHORT).show()
                 }
             }
         }

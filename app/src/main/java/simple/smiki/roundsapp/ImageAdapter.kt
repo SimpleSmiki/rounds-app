@@ -26,7 +26,7 @@ class ImageAdapter(
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val imageItem = images[position]
 
-        holder.binding.textView.text = "ID: ${imageItem.id}"
+        holder.binding.textView.text = context.getString(R.string.image_name_placeholder, imageItem.id)
 
         ImageLoader.getInstance(context)
             .Builder(imageItem.url)

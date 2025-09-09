@@ -2,4 +2,7 @@
     <string name="app_name">RoundsApp</string>
     <string name="loaded_image">Loaded image</string>
     <string name="invalidate_cache">Invalidate Cache</string>
+    <string name="image_name_placeholder">ID: %s</string>
+    <string name="cache_invalidated">Cache invalidated!</string>
+    <string name="error_fetching_images">Failed to fetch images</string>
 </resources>
