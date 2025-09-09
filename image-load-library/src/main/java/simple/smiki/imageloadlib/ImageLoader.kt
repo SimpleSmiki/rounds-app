@@ -12,6 +12,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import simple.smiki.imageloadlib.caches.Cache
+import simple.smiki.imageloadlib.caches.DiskCacheManager
+import simple.smiki.imageloadlib.caches.MemoryCacheManager
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
@@ -20,7 +23,10 @@ import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG = "ImageLoader"
 
-class ImageLoader private constructor() {
+class ImageLoader private constructor(
+    private val memoryCache: Cache,
+    private val diskCache: Cache
+) {
 
     companion object {
         @Volatile
@@ -28,14 +34,13 @@ class ImageLoader private constructor() {
 
         fun getInstance(context: Context): ImageLoader =
             INSTANCE ?: synchronized(this) {
-                INSTANCE ?: ImageLoader().also {
-                    it.diskCacheManager = DiskCacheManager(context)
-                    INSTANCE = it
-                }
+                INSTANCE ?: ImageLoader(
+                    MemoryCacheManager,
+                    DiskCacheManager(context)
+                ).also { INSTANCE = it }
             }
     }
 
-    private lateinit var diskCacheManager: DiskCacheManager
     private val activeDownloads = ConcurrentHashMap<ImageView, Job>()
 
     inner class Builder(private val url: String) {
@@ -67,16 +72,16 @@ class ImageLoader private constructor() {
             imageView.tag = url
 
             // Check memory cache first
-            val memCachedBitmap = MemoryCacheManager.get(url)
+            val memCachedBitmap = memoryCache.get(url)
             if (memCachedBitmap != null) {
                 setBitmap(imageView, memCachedBitmap)
                 return
             }
 
             // Check disk cache next
-            val diskCachedBitmap = diskCacheManager.get(url)
+            val diskCachedBitmap = diskCache.get(url)
             if (diskCachedBitmap != null) {
-                MemoryCacheManager.put(url, diskCachedBitmap)
+                memoryCache.put(url, diskCachedBitmap)
                 setBitmap(imageView, diskCachedBitmap)
                 return
             }
@@ -118,8 +123,8 @@ class ImageLoader private constructor() {
                 try {
                     val downloadedBitmap = downloadImage(url, targetWidth, targetHeight)
                     if (downloadedBitmap != null) {
-                        diskCacheManager.put(url, downloadedBitmap)
-                        MemoryCacheManager.put(url, downloadedBitmap)
+                        diskCache.put(url, downloadedBitmap)
+                        memoryCache.put(url, downloadedBitmap)
                         withContext(Dispatchers.Main) {
                             if (imageView.tag == url) {
                                 setBitmap(imageView, downloadedBitmap)
@@ -230,7 +235,7 @@ class ImageLoader private constructor() {
      * Clears all cached images from memory and disk.
      */
     fun invalidateCache() {
-        MemoryCacheManager.clear()
-        diskCacheManager.clear()
+        memoryCache.clear()
+        diskCache.clear()
     }
 }

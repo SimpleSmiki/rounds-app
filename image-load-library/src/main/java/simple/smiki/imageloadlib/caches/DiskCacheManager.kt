@@ -1,4 +1,4 @@
-package simple.smiki.imageloadlib
+package simple.smiki.imageloadlib.caches
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -10,7 +10,7 @@ import java.security.MessageDigest
 
 private const val CACHE_VALIDITY_MS = 4 * 60 * 60 * 1000L // 4 hours in milliseconds
 
-class DiskCacheManager(context: Context) {
+class DiskCacheManager(context: Context) : Cache {
 
     private val cacheDir: File = File(context.cacheDir, "image_cache")
 
@@ -25,7 +25,7 @@ class DiskCacheManager(context: Context) {
      * Retrieves a bitmap from the disk cache if it exists and is still valid.
      * @return The Bitmap if valid, otherwise null.
      */
-    fun get(url: String): Bitmap? {
+    override fun get(url: String): Bitmap? {
         val file = getFile(url)
         if (file.exists() && isFileValid(file)) {
             return BitmapFactory.decodeFile(file.absolutePath)
@@ -36,7 +36,7 @@ class DiskCacheManager(context: Context) {
     /**
      * Saves a bitmap to the disk cache.
      */
-    fun put(url: String, bitmap: Bitmap) {
+    override fun put(url: String, bitmap: Bitmap) {
         val file = getFile(url)
         try {
             FileOutputStream(file).use { out ->
@@ -51,7 +51,7 @@ class DiskCacheManager(context: Context) {
     /**
      * Deletes all files from the cache directory.
      */
-    fun clear() {
+    override fun clear() {
         cacheDir.listFiles()?.forEach { it.delete() }
     }
 

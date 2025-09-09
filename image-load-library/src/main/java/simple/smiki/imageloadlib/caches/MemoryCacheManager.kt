@@ -1,9 +1,9 @@
-package simple.smiki.imageloadlib
+package simple.smiki.imageloadlib.caches
 
 import android.graphics.Bitmap
 import android.util.LruCache
 
-object MemoryCacheManager {
+object MemoryCacheManager : Cache {
 
     private val maxCacheSize: Int = (Runtime.getRuntime().maxMemory() / 1024 / 8).toInt()
 
@@ -18,14 +18,14 @@ object MemoryCacheManager {
      * Retrieves a bitmap from the memory cache.
      * @return The Bitmap if it exists, otherwise null.
      */
-    fun get(url: String): Bitmap? {
+    override fun get(url: String): Bitmap? {
         return lruCache.get(url)
     }
 
     /**
      * Adds a bitmap to the memory cache.
      */
-    fun put(url: String, bitmap: Bitmap) {
+    override fun put(url: String, bitmap: Bitmap) {
         if (get(url) == null) {
             lruCache.put(url, bitmap)
         }
@@ -34,7 +34,7 @@ object MemoryCacheManager {
     /**
      * Clears all bitmaps from the memory cache.
      */
-    fun clear() {
+    override fun clear() {
         lruCache.evictAll()
     }
 }
