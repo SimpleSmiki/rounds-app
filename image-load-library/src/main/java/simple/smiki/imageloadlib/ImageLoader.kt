@@ -9,12 +9,14 @@ import android.view.ViewTreeObserver
 import android.widget.ImageView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG = "ImageLoader"
 
@@ -34,6 +36,7 @@ class ImageLoader private constructor() {
     }
 
     private lateinit var diskCacheManager: DiskCacheManager
+    private val activeDownloads = ConcurrentHashMap<ImageView, Job>()
 
     inner class Builder(private val url: String) {
         private var placeholder: Drawable? = null
@@ -56,6 +59,10 @@ class ImageLoader private constructor() {
         }
 
         fun into(imageView: ImageView) {
+
+            // Cancel any previous download for this ImageView
+            activeDownloads[imageView]?.cancel()
+
             imageView.setImageDrawable(placeholder)
             imageView.tag = url
 
@@ -107,8 +114,7 @@ class ImageLoader private constructor() {
             targetWidth: Int,
             targetHeight: Int
         ) {
-            // Use a coroutine to download and set the image
-            CoroutineScope(Dispatchers.IO).launch {
+            val job = CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val downloadedBitmap = downloadImage(url, targetWidth, targetHeight)
                     if (downloadedBitmap != null) {
@@ -132,8 +138,11 @@ class ImageLoader private constructor() {
                     withContext(Dispatchers.Main) {
                         setErrorDrawable(imageView)
                     }
+                } finally {
+                    activeDownloads.remove(imageView)
                 }
             }
+            activeDownloads[imageView] = job
         }
 
         private fun setBitmap(imageView: ImageView, bitmap: Bitmap) {
