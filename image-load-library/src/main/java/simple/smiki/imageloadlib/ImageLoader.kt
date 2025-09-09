@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.util.Log
+import android.view.ViewTreeObserver
 import android.widget.ImageView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -73,16 +74,42 @@ class ImageLoader private constructor() {
                 return
             }
 
+            // Defer the download until the ImageView is laid out and its dimensions are available
+            imageView.viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
+                override fun onPreDraw(): Boolean {
+                    // We only want to run this once.
+                    imageView.viewTreeObserver.removeOnPreDrawListener(this)
+
+                    // Check again if the tag has changed (the view has been recycled)
+                    if (imageView.tag != url) {
+                        return true
+                    }
+
+                    val targetWidth = imageView.width
+                    val targetHeight = imageView.height
+
+                    if (targetWidth > 0 && targetHeight > 0) {
+                        startLoad(imageView, url, targetWidth, targetHeight)
+                    } else {
+                        Log.w(TAG, "ImageView dimensions are 0 after onPreDraw. Skipping download for $url")
+                    }
+
+                    return true
+                }
+
+            })
+
+        }
+
+        private fun startLoad(
+            imageView: ImageView,
+            url: String,
+            targetWidth: Int,
+            targetHeight: Int
+        ) {
             // Use a coroutine to download and set the image
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    val targetWidth = imageView.width
-                    val targetHeight = imageView.height
-                    if (targetWidth == 0 || targetHeight == 0) {
-                        Log.w(TAG, "ImageView dimensions are 0. Skipping download for $url")
-                        return@launch
-                    }
-
                     val downloadedBitmap = downloadImage(url, targetWidth, targetHeight)
                     if (downloadedBitmap != null) {
                         diskCacheManager.put(url, downloadedBitmap)
