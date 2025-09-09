@@ -28,11 +28,11 @@ class ImageAdapter(
 
         holder.binding.textView.text = "ID: ${imageItem.id}"
 
-        val placeholder = ContextCompat.getDrawable(context, R.drawable.ic_placeholder)
-
         ImageLoader.getInstance(context)
             .Builder(imageItem.url)
-            .placeholder(placeholder)
+            .placeholder(ContextCompat.getDrawable(context, R.drawable.ic_placeholder))
+            .withErrorDrawable(ContextCompat.getDrawable(context, R.drawable.ic_error))
+            .withFadeInAnimation()
             .into(holder.binding.imageView)
     }
 

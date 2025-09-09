@@ -36,9 +36,21 @@ class ImageLoader private constructor() {
 
     inner class Builder(private val url: String) {
         private var placeholder: Drawable? = null
+        private var errorDrawable: Drawable? = null
+        private var fadeInAnimation: Boolean = false
 
         fun placeholder(drawable: Drawable?): Builder {
             this.placeholder = drawable
+            return this
+        }
+
+        fun withErrorDrawable(drawable: Drawable?): Builder {
+            this.errorDrawable = drawable
+            return this
+        }
+
+        fun withFadeInAnimation(): Builder {
+            this.fadeInAnimation = true
             return this
         }
 
@@ -49,7 +61,7 @@ class ImageLoader private constructor() {
             // Check memory cache first
             val memCachedBitmap = MemoryCacheManager.get(url)
             if (memCachedBitmap != null) {
-                imageView.setImageBitmap(memCachedBitmap)
+                setBitmap(imageView, memCachedBitmap)
                 return
             }
 
@@ -57,7 +69,7 @@ class ImageLoader private constructor() {
             val diskCachedBitmap = diskCacheManager.get(url)
             if (diskCachedBitmap != null) {
                 MemoryCacheManager.put(url, diskCachedBitmap)
-                imageView.setImageBitmap(diskCachedBitmap)
+                setBitmap(imageView, diskCachedBitmap)
                 return
             }
 
@@ -77,17 +89,39 @@ class ImageLoader private constructor() {
                         MemoryCacheManager.put(url, downloadedBitmap)
                         withContext(Dispatchers.Main) {
                             if (imageView.tag == url) {
-                                imageView.setImageBitmap(downloadedBitmap)
+                                setBitmap(imageView, downloadedBitmap)
                             } else {
                                 Log.d(TAG, "ImageView recycled. Skipping bitmap update for $url")
                             }
                         }
                     } else {
                         Log.e(TAG, "Failed to download or decode bitmap for $url")
+                        withContext(Dispatchers.Main) {
+                            setErrorDrawable(imageView)
+                        }
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error loading image from $url", e)
+                    withContext(Dispatchers.Main) {
+                        setErrorDrawable(imageView)
+                    }
                 }
+            }
+        }
+
+        private fun setBitmap(imageView: ImageView, bitmap: Bitmap) {
+            if (fadeInAnimation) {
+                imageView.alpha = 0f
+                imageView.setImageBitmap(bitmap)
+                imageView.animate().alpha(1f).setDuration(200).start()
+            } else {
+                imageView.setImageBitmap(bitmap)
+            }
+        }
+
+        private fun setErrorDrawable(imageView: ImageView) {
+            if (imageView.tag == url) {
+                imageView.setImageDrawable(errorDrawable)
             }
         }
     }
