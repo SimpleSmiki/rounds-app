@@ -14,6 +14,7 @@ import kotlinx.coroutines.withContext
 import simple.smiki.imageloadlib.ImageLoader
 import simple.smiki.roundsapp.databinding.ActivityMainBinding
 import simple.smiki.roundsapp.retrofit.NetworkClient
+import simple.smiki.roundsapp.ui.ImageAdapter
 
 class MainActivity : AppCompatActivity() {
 

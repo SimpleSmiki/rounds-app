@@ -1,7 +1,7 @@
 package simple.smiki.roundsapp.retrofit
 
 import retrofit2.http.GET
-import simple.smiki.roundsapp.ImageItem
+import simple.smiki.roundsapp.data.ImageItem
 
 /**
  * Retrofit interface for fetching the image list.

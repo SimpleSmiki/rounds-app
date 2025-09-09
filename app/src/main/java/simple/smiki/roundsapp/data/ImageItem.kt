@@ -1,4 +1,4 @@
-package simple.smiki.roundsapp
+package simple.smiki.roundsapp.data
 
 import com.google.gson.annotations.SerializedName
 

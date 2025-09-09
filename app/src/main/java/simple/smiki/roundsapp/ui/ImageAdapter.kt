@@ -1,4 +1,4 @@
-package simple.smiki.roundsapp
+package simple.smiki.roundsapp.ui
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import simple.smiki.imageloadlib.ImageLoader
+import simple.smiki.roundsapp.data.ImageItem
+import simple.smiki.roundsapp.R
 import simple.smiki.roundsapp.databinding.ListItemImageBinding
 
 /**
@@ -28,7 +30,7 @@ class ImageAdapter(
 
         holder.binding.textView.text = context.getString(R.string.image_name_placeholder, imageItem.id)
 
-        ImageLoader.getInstance(context)
+        ImageLoader.Companion.getInstance(context)
             .Builder(imageItem.url)
             .placeholder(ContextCompat.getDrawable(context, R.drawable.ic_placeholder))
             .withErrorDrawable(ContextCompat.getDrawable(context, R.drawable.ic_error))
@@ -40,4 +42,3 @@ class ImageAdapter(
         return images.size
     }
 }
-
