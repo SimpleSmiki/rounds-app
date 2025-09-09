@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- A light red background to signify an error -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#FFEEEE" />
+            <solid android:color="#FFCDD2" /> <!-- Material Red 100 for a soft error background -->
         </shape>
     </item>
+
+    <!-- The red-tinted "broken image" icon on top -->
     <item
-        android:drawable="@android:drawable/ic_menu_close_clear_cancel"
+        android:drawable="@drawable/ic_broken_image"
         android:gravity="center"
         android:width="48dp"
-        android:height="48dp"
-        android:tint="#FF0000" />
+        android:height="48dp" />
+
 </layer-list>
