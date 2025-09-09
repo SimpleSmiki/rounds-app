@@ -3,6 +3,7 @@ package simple.smiki.imageloadlib
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import java.io.File
 import java.io.FileOutputStream
 import java.security.MessageDigest
@@ -43,7 +44,7 @@ class DiskCacheManager(context: Context) {
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("ImageLoader", "Failed to save to disk cache: ${e.message}")
         }
     }
 
