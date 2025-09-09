@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "RoundsApp"
 include(":app")
+include(":image-load-library")
