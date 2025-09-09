@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#F5F5F5" />
+        </shape>
+    </item>
+    <item
+        android:drawable="@android:drawable/ic_menu_gallery"
+        android:gravity="center"
+        android:width="48dp"
+        android:height="48dp"/>
+</layer-list>
