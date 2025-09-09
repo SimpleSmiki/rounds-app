@@ -20,7 +20,7 @@
             android:contentDescription="@string/loaded_image" />
 
         <TextView
-            android:id="@+id/idTextView"
+            android:id="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
