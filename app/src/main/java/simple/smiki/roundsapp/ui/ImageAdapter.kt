@@ -30,9 +30,9 @@ class ImageAdapter(
 
         holder.binding.textView.text = context.getString(R.string.image_name_placeholder, imageItem.id)
 
-        ImageLoader.Companion.getInstance(context)
-            .Builder(imageItem.url)
-            .placeholder(ContextCompat.getDrawable(context, R.drawable.ic_placeholder))
+        ImageLoader.getInstance(context).Builder()
+            .load(imageItem.url)
+            .withPlaceholder(ContextCompat.getDrawable(context, R.drawable.ic_placeholder))
             .withErrorDrawable(ContextCompat.getDrawable(context, R.drawable.ic_error))
             .withFadeInAnimation()
             .into(holder.binding.imageView)

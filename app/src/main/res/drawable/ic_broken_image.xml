@@ -4,7 +4,7 @@
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24"
-    android:tint="#D32F2F"> <!-- Material Red 700 for a strong error tint -->
+    android:tint="@color/red">
 
     <path
         android:fillColor="@android:color/white"

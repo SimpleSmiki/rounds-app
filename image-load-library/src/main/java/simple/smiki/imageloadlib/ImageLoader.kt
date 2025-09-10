@@ -43,12 +43,18 @@ class ImageLoader private constructor(
 
     private val activeDownloads = ConcurrentHashMap<ImageView, Job>()
 
-    inner class Builder(private val url: String) {
+    inner class Builder() {
+        private lateinit var url: String
         private var placeholder: Drawable? = null
         private var errorDrawable: Drawable? = null
         private var fadeInAnimation: Boolean = false
 
-        fun placeholder(drawable: Drawable?): Builder {
+        fun load(url: String): Builder {
+            this.url = url
+            return this
+        }
+
+        fun withPlaceholder(drawable: Drawable?): Builder {
             this.placeholder = drawable
             return this
         }

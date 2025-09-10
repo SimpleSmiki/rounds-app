@@ -19,7 +19,6 @@ import simple.smiki.roundsapp.ui.ImageAdapter
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var imageAdapter: ImageAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets -> // Use binding.main
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
@@ -36,10 +35,8 @@ class MainActivity : AppCompatActivity() {
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
 
-        // Fetch the images and populate the list
         fetchImages()
 
-        // Set click listener for the invalidate cache button
         binding.invalidateCacheButton.setOnClickListener {
             ImageLoader.getInstance(this).invalidateCache()
             Toast.makeText(this, R.string.cache_invalidated, Toast.LENGTH_SHORT).show()
@@ -51,9 +48,7 @@ class MainActivity : AppCompatActivity() {
             try {
                 val images = NetworkClient.apiService.getImages()
                 withContext(Dispatchers.Main) {
-                    // Update the RecyclerView on the main thread
-                    imageAdapter = ImageAdapter(this@MainActivity, images)
-                    binding.recyclerView.adapter = imageAdapter
+                    binding.recyclerView.adapter = ImageAdapter(this@MainActivity, images)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
